@@ -51,12 +51,16 @@ typedef struct cuerpo {
 // Variables globales compartidas
 //
 cuerpo_t *cuerpos;
-float *fuerza_totalX, *fuerza_totalY, *fuerza_totalZ;
 int N;                       // número de cuerpos
 float delta_tiempo;          // intervalo de tiempo (DT)
 int pasos;                   // número de pasos de simulación
 int num_threads;             // número de hilos a usar
+int bodies_per_thread;        // número de cuerpos por hilo
 pthread_barrier_t barrier;   // barrera para sincronizar fases
+
+// To-Do: Eliminar fuerza_totalX, fuerza_totalY, fuerza_totalZ
+float *fuerza_totalX, *fuerza_totalY, *fuerza_totalZ;
+float **fuerzasX, **fuerzasY, **fuerzasZ; // Matriz de fuerzas
 
 //
 // Funciones de inicialización (idénticas al secuencial)
@@ -146,9 +150,11 @@ void inicializarCuerpos(cuerpo_t *cuerpos, int N) {
     srand(time(NULL));
 
     for (i = 0; i < N; i++) {
-        fuerza_totalX[i] = 0.0f;
-        fuerza_totalY[i] = 0.0f;
-        fuerza_totalZ[i] = 0.0f;
+        for (int j = 0; j < num_threads; j++) {
+            fuerzasX[j][i] = 0.0f;
+            fuerzasY[j][i] = 0.0f;
+            fuerzasZ[j][i] = 0.0f;
+        }
 
         cuerpos[i].tipo = rand() % 3;
         if (cuerpos[i].tipo == ESTRELLA) {
@@ -178,34 +184,78 @@ void inicializarCuerpos(cuerpo_t *cuerpos, int N) {
     cuerpos[1].vz   =  0.0f;
 }
 
-void calcularFuerzas(){}
-void moverCuerpos(){}
+void calculateForces(int idW) {
+    int cuerpo1, cuerpo2;
+	float dif_X, dif_Y, dif_Z;
+	double distancia, F;
+
+    for (int i = idW; i < bodies_per_thread -1; i += num_threads) {
+        // Calcular fuerzas de accion-reaccion y almacenar en fuerzas[id][j]
+        for (int j = i+1; j < N; j++) {
+            distancia = sqrt(pow(cuerpos[i].px - cuerpos[j].px, 2) + pow(cuerpos[i].py - cuerpos[j].py, 2) + pow(cuerpos[i].pz - cuerpos[j].pz, 2));
+            F = G * cuerpos[i].masa * cuerpos[j].masa / (distancia * distancia);
+
+            dif_X = cuerpos[j].px - cuerpos[i].px;
+            dif_Y = cuerpos[j].py - cuerpos[i].py;
+            dif_Z = cuerpos[j].pz - cuerpos[i].pz;
+
+            fuerzasX[idW][j] += dif_X * F;
+            fuerzasY[idW][j] += dif_Y * F;
+            fuerzasZ[idW][j] += dif_Z * F;
+            fuerzasX[idW][j] += dif_X * F;
+            fuerzasY[idW][j] += dif_Y * F;
+            fuerzasZ[idW][j] += dif_Z * F;
+        }
+    }
+}
+
+void moveBodies(int idW) {
+    double force_x, force_y, force_z;
+    double dv_x, dv_y, dv_z;
+    double dp_x, dp_y, dp_z;
+
+    force_x = force_y = force_z = 0.0;
+    dv_x = dv_y = dv_z = 0.0;
+    dp_x = dp_y = dp_z = 0.0;
+
+    for (int i = idW; i < bodies_per_thread -1; i += num_threads) {
+        for (int k = 0; k < num_threads; k++) {
+            force_x += fuerzasX[k][i];
+            force_y += fuerzasY[k][i];
+            force_z += fuerzasZ[k][i];
+            fuerzasX[k][i] = fuerzasY[k][i] = fuerzasZ[k][i] = 0.0;
+        }
+        dv_x = (force_x / cuerpos[i].masa) * delta_tiempo;
+        dv_y = (force_y / cuerpos[i].masa) * delta_tiempo;
+        dv_z = (force_z / cuerpos[i].masa) * delta_tiempo;
+
+        dp_x = (cuerpos[i].vx + dv_x/2) * delta_tiempo;
+        dp_y = (cuerpos[i].vy + dv_y/2) * delta_tiempo;
+        dp_z = (cuerpos[i].vz + dv_z/2) * delta_tiempo;
+
+        cuerpos[i].vx += dv_x;
+        cuerpos[i].vy += dv_y;
+        cuerpos[i].vz += dv_z;
+
+        cuerpos[i].px += dp_x;
+        cuerpos[i].py += dp_y;
+        cuerpos[i].pz += dp_z;
+
+        force_x = force_y = force_z = 0.0;
+    }
+}
 
 //
 // Función que cada hilo ejecuta para simular
 //
 void* simulate(void *arg) {
     int id = *(int *)arg;
-    int bodies_per_thread = N / num_threads;
-    int start = id * bodies_per_thread;
-    int end = (id == num_threads - 1) ? N : (start + bodies_per_thread);
 
     for (int paso = 0; paso < pasos; paso++) {
-        // 1) Fase de cálculo de fuerzas: cada hilo calcula
-        //    la fuerza neta solo para los cuerpos [start, end)
-        
-        calcularFuerzas();
-
-        // Sincronizar: esperar a que todos los hilos terminen cálculo de fuerzas
-        pthread_barrier_wait(&barrier);
-
-        // 2) Fase de mover cuerpos: cada hilo actualiza posición y velocidad
-        //    solo para los cuerpos [start, end), usando las fuerzas calculadas
-        
-        moverCuerpos();
-
-        // Sincronizar: esperar a que todos los hilos terminen de mover cuerpos
-        pthread_barrier_wait(&barrier);
+        calculateForces(id);
+        pthread_barrier_wait(&barrier); // Sincronizar: esperar a que todos los hilos terminen cálculo de fuerzas
+        moveBodies(id);
+        pthread_barrier_wait(&barrier); // Sincronizar: esperar a que todos los hilos terminen de mover cuerpos
     }
 
     pthread_exit(NULL);
@@ -223,21 +273,23 @@ int main(int argc, char *argv[]) {
     delta_tiempo = atof(argv[2]); // DT
     pasos = atoi(argv[3]);
     num_threads = atoi(argv[4]);
+    bodies_per_thread = N / num_threads;
 
     // Reservar memoria para cuerpos y arreglos de fuerza
     cuerpos = (cuerpo_t *)malloc(sizeof(cuerpo_t) * N);
-    fuerza_totalX = (float *)malloc(sizeof(float) * N);
-    fuerza_totalY = (float *)malloc(sizeof(float) * N);
-    fuerza_totalZ = (float *)malloc(sizeof(float) * N);
-    if (!cuerpos || !fuerza_totalX || !fuerza_totalY || !fuerza_totalZ) {
+    fuerzasX = (float **)malloc(sizeof(float *) * num_threads);
+    fuerzasY = (float **)malloc(sizeof(float *) * num_threads);
+    fuerzasZ = (float **)malloc(sizeof(float *) * num_threads);
+    for (int i = 0; i < num_threads; i++) {
+        fuerzasX[i] = (float *)malloc(sizeof(float) * N);
+        fuerzasY[i] = (float *)malloc(sizeof(float) * N);
+        fuerzasZ[i] = (float *)malloc(sizeof(float) * N);
+    }
+    if (!cuerpos || !fuerzasX || !fuerzasY || !fuerzasZ) {
         fprintf(stderr, "Error al asignar memoria\n");
         return -1;
     }
-
-    // Inicializar cuerpos y fuerzas
     inicializarCuerpos(cuerpos, N);
-
-    
 
     // Inicializar barrera para sincronizar num_threads hilos
     if (pthread_barrier_init(&barrier, NULL, num_threads) != 0) {
@@ -252,12 +304,9 @@ int main(int argc, char *argv[]) {
     pthread_t threads[num_threads];
     int thread_ids[num_threads];
 
-    for (int t = 0; t < num_threads; t++) {
-        thread_ids[t] = t; // Asignar t como id del thread
-    }
+    for (int t = 0; t < num_threads; t++) thread_ids[t] = t; // Asignar t como id del thread
 
-    // Inicializar temporizador
-    double tIni = dwalltime();
+    double tIni = dwalltime(); // Inicializar temporizador
 
     /*/////////////////////////////////////////////////
                     2. CREATE THREADS
@@ -284,11 +333,18 @@ int main(int argc, char *argv[]) {
     printf("Tiempo en segundos (paralelo con %d hilos): %f\n", num_threads, tTotal);
 
     // Destruir barrera y liberar memoria
+    // To-Do: verificar que se libera toda la memoria usada
     pthread_barrier_destroy(&barrier);
     free(cuerpos);
-    free(fuerza_totalX);
-    free(fuerza_totalY);
-    free(fuerza_totalZ);
+    for (int i = 0; i < num_threads; i++) {
+        free(fuerzasX[i]);
+        free(fuerzasY[i]);
+        free(fuerzasZ[i]);
+    }
+    free(fuerzasX);
+    free(fuerzasY);
+    free(fuerzasZ);
+
 
     return 0;
 }
