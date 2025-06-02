@@ -192,19 +192,25 @@ void calculateForces(int idW) {
     for (int i = idW; i < bodies_per_thread -1; i += num_threads) {
         // Calcular fuerzas de accion-reaccion y almacenar en fuerzas[id][j]
         for (int j = i+1; j < N; j++) {
-            distancia = sqrt(pow(cuerpos[i].px - cuerpos[j].px, 2) + pow(cuerpos[i].py - cuerpos[j].py, 2) + pow(cuerpos[i].pz - cuerpos[j].pz, 2));
-            F = G * cuerpos[i].masa * cuerpos[j].masa / (distancia * distancia);
-
+            if ((cuerpos[i].px == cuerpos[j].px) && (cuerpos[i].py == cuerpos[j].py) && (cuerpos[i].pz == cuerpos[j].pz))
+                continue;
             dif_X = cuerpos[j].px - cuerpos[i].px;
             dif_Y = cuerpos[j].py - cuerpos[i].py;
             dif_Z = cuerpos[j].pz - cuerpos[i].pz;
 
-            fuerzasX[idW][j] += dif_X * F;
-            fuerzasY[idW][j] += dif_Y * F;
-            fuerzasZ[idW][j] += dif_Z * F;
-            fuerzasX[idW][j] += dif_X * F;
-            fuerzasY[idW][j] += dif_Y * F;
-            fuerzasZ[idW][j] += dif_Z * F;
+            distancia = sqrt(dif_X*dif_X + dif_Y*dif_Y + dif_Z*dif_Z);
+
+            F = G * cuerpos[i].masa * cuerpos[j].masa / (distancia * distancia);
+
+            // Cuerpo i
+            fuerzasX[idW][i] += dif_X * F;
+            fuerzasY[idW][i] += dif_Y * F;
+            fuerzasZ[idW][i] += dif_Z * F;
+
+            // Cuerpo j
+            fuerzasX[idW][j] -= dif_X * F;
+            fuerzasY[idW][j] -= dif_Y * F;
+            fuerzasZ[idW][j] -= dif_Z * F;
         }
     }
 }
