@@ -30,7 +30,7 @@ void calculateForces(int idW) {
 	float dif_X, dif_Y, dif_Z;
 	double distancia, F;
 
-    for (int i = idW; i < bodies_per_thread -1; i += P) {
+    for (int i = idW; i < N -1; i += P) {
         // Calcular fuerzas de accion-reaccion y almacenar en fuerzas[id][j]
         for (int j = i+1; j < N; j++) {
             if ((cuerpos[i].px == cuerpos[j].px) && (cuerpos[i].py == cuerpos[j].py) && (cuerpos[i].pz == cuerpos[j].pz))
@@ -65,7 +65,7 @@ void moveBodies(int idW) {
     dv_x = dv_y = dv_z = 0.0;
     dp_x = dp_y = dp_z = 0.0;
 
-    for (int i = idW; i < bodies_per_thread -1; i += P) {
+    for (int i = idW; i < N -1; i += P) {
         for (int k = 0; k < P; k++) {
             force_x += fuerzasX[k][i];
             force_y += fuerzasY[k][i];
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
     double tIni = dwalltime(); // Inicializar temporizador
 
     for (int t = 0; t < P; t++) {
-        if (pthread_create(&threads[t], NULL, simulate, (void*)&thread_ids[t]) != 0) {
+        if (pthread_create(&threads[t], NULL, &simulate, (void*)&thread_ids[t]) != 0) {
             fprintf(stderr, "Error al crear hilo %d\n", t);
             return -1;
         }
