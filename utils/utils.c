@@ -107,7 +107,7 @@ void inicializarH2(cuerpo_t *c, int i, double n) {
     c->b = 1.0f;
 }
 
-void inicializarCuerpos(cuerpo_t *cuerpos, int N, int num_threads, float **fuerzasX, float **fuerzasY, float **fuerzasZ) {
+void inicializarCuerpos(cuerpo_t *cuerpos, int N, int P) {
     int i;
     double n = (double)N;
 
@@ -121,12 +121,6 @@ void inicializarCuerpos(cuerpo_t *cuerpos, int N, int num_threads, float **fuerz
     srand(time(NULL));
 
     for (i = 0; i < N; i++) {
-        for (int j = 0; j < num_threads; j++) {
-            fuerzasX[j][i] = 0.0f;
-            fuerzasY[j][i] = 0.0f;
-            fuerzasZ[j][i] = 0.0f;
-        }
-
         cuerpos[i].tipo = rand() % 3;
         if (cuerpos[i].tipo == ESTRELLA) {
             inicializarEstrella(&cuerpos[i], i, n);
@@ -155,3 +149,12 @@ void inicializarCuerpos(cuerpo_t *cuerpos, int N, int num_threads, float **fuerz
     cuerpos[1].vz   =  0.0f;
 }
 
+void inicializarFuerzas(int N, int P, float **fuerzasX, float **fuerzasY, float **fuerzasZ) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < P; j++) {
+            fuerzasX[j][i] = 0.0f;
+            fuerzasY[j][i] = 0.0f;
+            fuerzasZ[j][i] = 0.0f;
+        }
+    }
+}

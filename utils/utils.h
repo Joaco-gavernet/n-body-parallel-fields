@@ -40,7 +40,9 @@ double dwalltime();
 void inicializarEstrella(cuerpo_t *c, int i, double n);
 void inicializarPolvo(cuerpo_t *c, int i, double n);
 void inicializarH2(cuerpo_t *c, int i, double n);
-void inicializarCuerpos(cuerpo_t *cuerpos, int N, int num_threads, float **fuerzasX, float **fuerzasY, float **fuerzasZ);
+void inicializarCuerpos(cuerpo_t *cuerpos, int N, int P); 
+void inicializarFuerzas(int N, int P, float **fuerzasX, float **fuerzasY, float **fuerzasZ); 
+
 
 // Memory management functions
 void allocateMemory(cuerpo_t **cuerpos, float ***fuerzasX, float ***fuerzasY, float ***fuerzasZ, int N, int num_threads);

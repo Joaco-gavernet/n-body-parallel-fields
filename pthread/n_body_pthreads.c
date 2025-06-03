@@ -119,7 +119,8 @@ int main(int argc, char *argv[]) {
     bodies_per_thread = N / P;
 
     allocateMemory(&cuerpos, &fuerzasX, &fuerzasY, &fuerzasZ, N, P); 
-    inicializarCuerpos(cuerpos, N, P, fuerzasX, fuerzasY, fuerzasZ);
+    inicializarCuerpos(cuerpos, N, P);
+    inicializarFuerzas(N, P, fuerzasX, fuerzasY, fuerzasZ); 
 
     if (pthread_barrier_init(&barrier, NULL, P) != 0) {
         fprintf(stderr, "Error al inicializar la barrera\n");
