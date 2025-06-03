@@ -14,6 +14,10 @@
 #define POLVO 1
 #define H2 2
 
+typedef struct {
+    double x, y, z;
+} T3Dpoint;
+
 // Structure representing a body
 typedef struct cuerpo {
     float masa;
