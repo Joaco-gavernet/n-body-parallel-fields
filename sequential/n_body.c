@@ -1,7 +1,7 @@
 // Compilar:
-//		gcc -o n_body_simple_NOGL n_body_simple.c -lm
+//		gcc -o n_body n_body.c -lm
 // Ejecutar:
-//		./n_body_simple_NOGL <nro de cuerpos> <DT> <Pasos>
+//		./n_body <nro de cuerpos> <DT> <Pasos>
 
 #include <stdio.h>
 #include <stdlib.h>

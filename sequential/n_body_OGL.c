@@ -1,9 +1,9 @@
 // Para que funcione en Linux Debian/Ubuntu:
 // 		apt install freeglut3-dev
 // Compilar:
-//		gcc -o n_body_simple n_body_simple.c -lm -lGL -lGLU -lglut
+//		gcc -o n_body_OGL n_body_OGL.c -lm -lGL -lGLU -lglut
 // Ejecutar:
-//		./n_body_simple <nro de cuerpos> <DT> <Pasos>
+//		./n_body_OGL <nro de cuerpos> <DT> <Pasos>
 
 #include <GL/glut.h>
 #include <stdio.h>
