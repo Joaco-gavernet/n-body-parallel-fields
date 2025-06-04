@@ -169,7 +169,7 @@ void *funcion(void *args) {
         MPI_Recv(fuerzaY_externa, block_size, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Recv(fuerzaZ_externa, block_size, MPI_DOUBLE, 0, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       }
-      pthread_barrier_wait(&barrier);
+      pthread_barrier_wait(&barrier); // TO-DO: check if wrong
 
       for (int i = (N - block_size) + idT; i < N; i += T) {
         fuerzaX_total[i] += fuerzaX_externa[i - (N - block_size)];

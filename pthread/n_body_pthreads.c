@@ -29,11 +29,17 @@ void calculateForces(int idW) {
 	double dif_X, dif_Y, dif_Z;  // Changed to double for better precision
 	double distancia, F;
 
+	// Reset forces for all bodies this thread will process
+	for (int i = idW; i < N; i += P) {
+		fuerzasX[idW][i] = fuerzasY[idW][i] = fuerzasZ[idW][i] = 0.0;
+	}
+
 	for (int i = idW; i < N - 1; i += P) {
 		// Calcular fuerzas de accion-reaccion y almacenar en fuerzas[id][j]
 		for (int j = i+1; j < N; j++) {
 			if ((cuerpos[i].px == cuerpos[j].px) && (cuerpos[i].py == cuerpos[j].py) && (cuerpos[i].pz == cuerpos[j].pz))
 				continue;
+
 			dif_X = cuerpos[j].px - cuerpos[i].px;
 			dif_Y = cuerpos[j].py - cuerpos[i].py;
 			dif_Z = cuerpos[j].pz - cuerpos[i].pz;
@@ -96,11 +102,6 @@ void* simulate(void *arg) {
 	int id = *(int *)arg;
 
 	for (int paso = 0; paso < pasos; paso++) {
-		// Reset forces for this thread's bodies
-		for (int i = id; i < N; i += P) {
-			fuerzasX[id][i] = fuerzasY[id][i] = fuerzasZ[id][i] = 0.0;
-		}
-		
 		calculateForces(id);
 		pthread_barrier_wait(&barrier); // After force calculation
 		
