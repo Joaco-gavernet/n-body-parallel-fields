@@ -9,8 +9,12 @@ parser.add_argument("N", type=int, help="Cantidad de cuerpos a comparar")
 args = parser.parse_args()
 N_OBJETIVO = args.N
 
+print(f"Buscando archivos para N={N_OBJETIVO}")
+
 # Detectar archivos .log que empiezan con n_body y terminan en .log
-todos_los_logs = [f for f in os.listdir('.') if f.startswith('n_body') and f.endswith('.log')]
+log_dir = os.path.dirname(os.path.abspath(__file__))
+todos_los_logs = [f for f in os.listdir(log_dir) if f.startswith('n_body') and f.endswith('.log')]
+print(f"Archivos encontrados: {todos_los_logs}")
 
 # Diccionario para mantener orden de prioridad
 orden_claves = []
@@ -18,6 +22,7 @@ archivos = {}
 tiempos = {}
 
 for archivo in sorted(todos_los_logs):
+    print(f"Procesando archivo: {archivo}")
     if match := re.match(r'n_body_(\d+)\.log$', archivo):
         N = int(match.group(1))
         if N != N_OBJETIVO:
@@ -34,12 +39,14 @@ for archivo in sorted(todos_los_logs):
             continue
         clave = f'hybrid-{P:03d}-{T:03d}-{N:06d}'
     else:
+        print(f"No match para archivo: {archivo}")
         continue
 
-    archivos[clave] = archivo
+    print(f"Archivo {archivo} mapeado a clave: {clave}")
+    archivos[clave] = os.path.join(log_dir, archivo)
     orden_claves.append(clave)
 
-    with open(archivo, 'r') as f:
+    with open(os.path.join(log_dir, archivo), 'r') as f:
         for linea in f:
             if 'Tiempo en segundos' in linea:
                 match = re.search(r"([\d.]+)", linea)
@@ -49,6 +56,7 @@ for archivo in sorted(todos_los_logs):
                 break
 
 orden_claves = list(dict.fromkeys(orden_claves))
+print(f"Claves finales: {orden_claves}")
 
 
 def cargar_posiciones(path):
@@ -73,8 +81,7 @@ def cargar_posiciones(path):
     return cuerpos
 
 
-datos = {nombre: cargar_posiciones(
-    archivos[nombre]) for nombre in orden_claves}
+datos = {nombre: cargar_posiciones(archivos[nombre]) for nombre in orden_claves}
 
 comparados = set()
 pares = []
@@ -84,7 +91,7 @@ for i, a in enumerate(orden_claves):
             pares.append((a, b))
             comparados.add((a, b))
 
-nombre_log = f"comparaciones_{N_OBJETIVO}.log"
+nombre_log = f"error_analysis/error_analysis_{N_OBJETIVO}.log"
 with open(nombre_log, "w") as log:
     for a, b in pares:
         log.write(f"Comparando: {a} vs {b}\n")
@@ -108,8 +115,7 @@ with open(nombre_log, "w") as log:
         suma_error_pct_z = 0.0
         eps = 1e-12
 
-        log.write(
-            f"{'ID':<3} {'ΔX':>10} {'ΔY':>10} {'ΔZ':>12} {'eX':>10} {'eY':>10} {'eZ':>10}\n")
+        # log.write(f"{'ID':<3} {'ΔX':>10} {'ΔY':>10} {'ΔZ':>12} {'eX':>10} {'eY':>10} {'eZ':>10}\n")
         for i in sorted(ids_comunes):
             x1, y1, z1 = posiciones_a[i]
             x2, y2, z2 = posiciones_b[i]
@@ -137,9 +143,8 @@ with open(nombre_log, "w") as log:
             if dz > max_dif_z[1]:
                 max_dif_z = (i, dz)
 
-            if ex > 0.0000009 or ey > 0.0000009 or ez > 0.0000009:
-                log.write(
-                    f"{i:<5} {dx:12.6e} {dy:12.6e} {dz:12.6e} {ex:.6f}% {ey:.6f}% {ez:.6f}%\n")
+            # if ex > 0.0000009 or ey > 0.0000009 or ez > 0.0000009:
+            #     log.write(f"{i:<5} {dx:12.6e} {dy:12.6e} {dz:12.6e} {ex:.6f}% {ey:.6f}% {ez:.6f}%\n")
 
         num_cuerpos = len(ids_comunes)
         prom_x = suma_dif_x / num_cuerpos

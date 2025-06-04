@@ -13,20 +13,20 @@ double dwalltime() {
 static double toroide_alfa, toroide_theta, toroide_incremento, toroide_lado, toroide_r, toroide_R;
 
 // Memory management functions
-void allocateMemory(cuerpo_t **cuerpos, float ***fuerzasX, float ***fuerzasY, float ***fuerzasZ, int N, int num_threads) {
+void allocateMemory(cuerpo_t **cuerpos, tipo_ops ***fuerzasX, tipo_ops ***fuerzasY, tipo_ops ***fuerzasZ, int N, int num_threads) {
     *cuerpos = (cuerpo_t *)malloc(N * sizeof(cuerpo_t));
-    *fuerzasX = (float **)malloc(num_threads * sizeof(float *));
-    *fuerzasY = (float **)malloc(num_threads * sizeof(float *));
-    *fuerzasZ = (float **)malloc(num_threads * sizeof(float *));
+    *fuerzasX = (tipo_ops **)malloc(num_threads * sizeof(tipo_ops *));
+    *fuerzasY = (tipo_ops **)malloc(num_threads * sizeof(tipo_ops *));
+    *fuerzasZ = (tipo_ops **)malloc(num_threads * sizeof(tipo_ops *));
     
     for (int i = 0; i < num_threads; i++) {
-        (*fuerzasX)[i] = (float *)malloc(N * sizeof(float));
-        (*fuerzasY)[i] = (float *)malloc(N * sizeof(float));
-        (*fuerzasZ)[i] = (float *)malloc(N * sizeof(float));
+        (*fuerzasX)[i] = (tipo_ops *)malloc(N * sizeof(tipo_ops));
+        (*fuerzasY)[i] = (tipo_ops *)malloc(N * sizeof(tipo_ops));
+        (*fuerzasZ)[i] = (tipo_ops *)malloc(N * sizeof(tipo_ops));
     }
 }
 
-void freeMemory(cuerpo_t *cuerpos, float ***fuerzasX, float ***fuerzasY, float ***fuerzasZ, int num_threads) {
+void freeMemory(cuerpo_t *cuerpos, tipo_ops ***fuerzasX, tipo_ops ***fuerzasY, tipo_ops ***fuerzasZ, int num_threads) {
     free(cuerpos);
     for (int i = 0; i < num_threads; i++) {
         free((*fuerzasX)[i]);
@@ -39,7 +39,7 @@ void freeMemory(cuerpo_t *cuerpos, float ***fuerzasX, float ***fuerzasY, float *
 }
 
 void inicializarEstrella(cuerpo_t *c, int i, double n) {
-    c->masa = 0.001f * 8.0f;
+    c->masa = 0.001 * 8.0;
 
     if ((toroide_alfa + toroide_incremento) >= 2 * M_PI) {
         toroide_alfa = 0;
@@ -52,17 +52,17 @@ void inicializarEstrella(cuerpo_t *c, int i, double n) {
     c->py = (toroide_R + toroide_r * cos(toroide_alfa)) * sin(toroide_theta);
     c->pz = toroide_r * sin(toroide_alfa);
 
-    c->vx = 0.0f;
-    c->vy = 0.0f;
-    c->vz = 0.0f;
+    c->vx = 0.0;
+    c->vy = 0.0;
+    c->vz = 0.0;
 
-    c->r = 1.0f;
-    c->g = 1.0f;
-    c->b = 1.0f;
+    c->r = 1.0;
+    c->g = 1.0;
+    c->b = 1.0;
 }
 
 void inicializarPolvo(cuerpo_t *c, int i, double n) {
-    c->masa = 0.001f * 4.0f;
+    c->masa = 0.001 * 4.0;
 
     if ((toroide_alfa + toroide_incremento) >= 2 * M_PI) {
         toroide_alfa = 0;
@@ -75,17 +75,17 @@ void inicializarPolvo(cuerpo_t *c, int i, double n) {
     c->py = (toroide_R + toroide_r * cos(toroide_alfa)) * sin(toroide_theta);
     c->pz = toroide_r * sin(toroide_alfa);
 
-    c->vx = 0.0f;
-    c->vy = 0.0f;
-    c->vz = 0.0f;
+    c->vx = 0.0;
+    c->vy = 0.0;
+    c->vz = 0.0;
 
-    c->r = 1.0f;
-    c->g = 0.0f;
-    c->b = 0.0f;
+    c->r = 1.0;
+    c->g = 0.0;
+    c->b = 0.0;
 }
 
 void inicializarH2(cuerpo_t *c, int i, double n) {
-    c->masa = 0.001f;
+    c->masa = 0.001;
 
     if ((toroide_alfa + toroide_incremento) >= 2 * M_PI) {
         toroide_alfa = 0;
@@ -98,13 +98,13 @@ void inicializarH2(cuerpo_t *c, int i, double n) {
     c->py = (toroide_R + toroide_r * cos(toroide_alfa)) * sin(toroide_theta);
     c->pz = toroide_r * sin(toroide_alfa);
 
-    c->vx = 0.0f;
-    c->vy = 0.0f;
-    c->vz = 0.0f;
+    c->vx = 0.0;
+    c->vy = 0.0;
+    c->vz = 0.0;
 
-    c->r = 1.0f;
-    c->g = 1.0f;
-    c->b = 1.0f;
+    c->r = 1.0;
+    c->g = 1.0;
+    c->b = 1.0;
 }
 
 void inicializarCuerpos(cuerpo_t *cuerpos, int N, int P) {
@@ -132,29 +132,29 @@ void inicializarCuerpos(cuerpo_t *cuerpos, int N, int P) {
     }
 
     // Configuración manual de dos cuerpos para simetría inicial
-    cuerpos[0].masa = 2.0e2f;
-    cuerpos[0].px   = 0.0f;
-    cuerpos[0].py   = 0.0f;
-    cuerpos[0].pz   = 0.0f;
-    cuerpos[0].vx   = -0.000001f;
-    cuerpos[0].vy   = -0.000001f;
-    cuerpos[0].vz   = 0.0f;
+    cuerpos[0].masa = 2.0e2;
+    cuerpos[0].px   = 0.0;
+    cuerpos[0].py   = 0.0;
+    cuerpos[0].pz   = 0.0;
+    cuerpos[0].vx   = -0.000001;
+    cuerpos[0].vy   = -0.000001;
+    cuerpos[0].vz   = 0.0;
 
-    cuerpos[1].masa = 1.0e1f;
-    cuerpos[1].px   = -1.0f;
-    cuerpos[1].py   =  0.0f;
-    cuerpos[1].pz   =  0.0f;
-    cuerpos[1].vx   =  0.0f;
-    cuerpos[1].vy   =  0.0001f;
-    cuerpos[1].vz   =  0.0f;
+    cuerpos[1].masa = 1.0e1;
+    cuerpos[1].px   = -1.0;
+    cuerpos[1].py   =  0.0;
+    cuerpos[1].pz   =  0.0;
+    cuerpos[1].vx   =  0.0;
+    cuerpos[1].vy   =  0.0001;
+    cuerpos[1].vz   =  0.0;
 }
 
-void inicializarFuerzas(int N, int P, float **fuerzasX, float **fuerzasY, float **fuerzasZ) {
+void inicializarFuerzas(int N, int P, tipo_ops **fuerzasX, tipo_ops **fuerzasY, tipo_ops **fuerzasZ) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < P; j++) {
-            fuerzasX[j][i] = 0.0f;
-            fuerzasY[j][i] = 0.0f;
-            fuerzasZ[j][i] = 0.0f;
+            fuerzasX[j][i] = 0.0;
+            fuerzasY[j][i] = 0.0;
+            fuerzasZ[j][i] = 0.0;
         }
     }
 }

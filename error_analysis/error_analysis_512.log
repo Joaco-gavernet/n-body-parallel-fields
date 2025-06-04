@@ -1,0 +1,74 @@
+Comparando: secuencial-000512 vs hybrid-002-002-000512
+
+Resumen:
+
+Cantidad de cuerpos procesados: 512
+Tiempo secuencial: 3.064313 s
+Tiempo hybrid-002-002-000512: 0.775695 s
+
+
+Speedup: 3.9504
+Eficiencia: 98.7603%
+
+
+Máxima diferencia en X: cuerpo 213 con ΔX = 1.001725e+02
+Máxima diferencia en Y: cuerpo 213 con ΔY = 1.788303e+02
+Máxima diferencia en Z: cuerpo 213 con ΔZ = 8.505869e+01
+
+Promedio ΔX = 3.959309e+00
+Promedio ΔY = 5.341885e+00
+Promedio ΔZ = 2.071667e+00
+
+Error porcentual promedio ΔX% = 701.706462%
+Error porcentual promedio ΔY% = 166.037181%
+Error porcentual promedio ΔZ% = 312.960681%
+
+------------------------------------------------------------
+
+Comparando: secuencial-000512 vs pthreads-004-000512
+
+Resumen:
+
+Cantidad de cuerpos procesados: 512
+Tiempo secuencial: 3.064313 s
+Tiempo pthreads-004-000512: 1.598220 s
+
+
+Speedup: 1.9173
+Eficiencia: 47.9332%
+
+
+Máxima diferencia en X: cuerpo 54 con ΔX = 3.088671e+01
+Máxima diferencia en Y: cuerpo 79 con ΔY = 3.408496e+01
+Máxima diferencia en Z: cuerpo 166 con ΔZ = 3.891244e+01
+
+Promedio ΔX = 1.255704e+00
+Promedio ΔY = 1.338406e+00
+Promedio ΔZ = 9.364141e-01
+
+Error porcentual promedio ΔX% = 891.959560%
+Error porcentual promedio ΔY% = 106.666036%
+Error porcentual promedio ΔZ% = 724.608504%
+
+------------------------------------------------------------
+
+Comparando: hybrid-002-002-000512 vs pthreads-004-000512
+
+Resumen:
+Cantidad de cuerpos procesados: 512
+
+
+Máxima diferencia en X: cuerpo 213 con ΔX = 1.001725e+02
+Máxima diferencia en Y: cuerpo 213 con ΔY = 1.788303e+02
+Máxima diferencia en Z: cuerpo 213 con ΔZ = 8.505869e+01
+
+Promedio ΔX = 3.976728e+00
+Promedio ΔY = 5.220536e+00
+Promedio ΔZ = 2.132261e+00
+
+Error porcentual promedio ΔX% = 47125782179.410088%
+Error porcentual promedio ΔY% = 135927960570.420303%
+Error porcentual promedio ΔZ% = 227149398.676390%
+
+------------------------------------------------------------
+
