@@ -118,7 +118,7 @@ void inicializarCuerpos(cuerpo_t *cuerpos, int N, int P) {
     toroide_r = 1.0;
     toroide_R = 2.0 * toroide_r;
 
-    srand(time(NULL));
+    srand(1);  // Fixed seed for reproducibility
 
     for (i = 0; i < N; i++) {
         cuerpos[i].tipo = rand() % 3;

@@ -207,8 +207,8 @@ void inicializarH2(cuerpo_t *cuerpo,int i,double n){
 }
 
 void inicializarCuerpos(cuerpo_t *cuerpos,int N){
- int cuerpo;
- double n = N;
+	int cuerpo;
+	double n = N;
 
 	toroide_alfa = 0.0;
 	toroide_theta = 0.0;
@@ -217,10 +217,9 @@ void inicializarCuerpos(cuerpo_t *cuerpos,int N){
 	toroide_r = 1.0;
 	toroide_R = 2*toroide_r;
 	
-	srand(time(NULL));
+	srand(1);  // Fixed seed for reproducibility
 
 	for(cuerpo = 0; cuerpo < N; cuerpo++){
-
         fuerza_totalX[cuerpo] = 0.0;
 		fuerza_totalY[cuerpo] = 0.0;
 		fuerza_totalZ[cuerpo] = 0.0;
@@ -237,21 +236,21 @@ void inicializarCuerpos(cuerpo_t *cuerpos,int N){
 
 	}
 
-		cuerpos[0].masa = 2.0e2;
-	        cuerpos[0].px = 0.0;
-		cuerpos[0].py = 0.0;
-		cuerpos[0].pz = 0.0;
-		cuerpos[0].vx = -0.000001;
-		cuerpos[0].vy = -0.000001;
-		cuerpos[0].vz = 0.0;
+	cuerpos[0].masa = 2.0e2;
+	cuerpos[0].px = 0.0;
+	cuerpos[0].py = 0.0;
+	cuerpos[0].pz = 0.0;
+	cuerpos[0].vx = -0.000001;
+	cuerpos[0].vy = -0.000001;
+	cuerpos[0].vz = 0.0;
 
-		cuerpos[1].masa = 1.0e1;
-	        cuerpos[1].px = -1.0;
-		cuerpos[1].py = 0.0;
-		cuerpos[1].pz = 0.0;
-		cuerpos[1].vx = 0.0;
-		cuerpos[1].vy = 0.0001;
-		cuerpos[1].vz = 0.0;
+	cuerpos[1].masa = 1.0e1;
+	cuerpos[1].px = -1.0;
+	cuerpos[1].py = 0.0;
+	cuerpos[1].pz = 0.0;
+	cuerpos[1].vx = 0.0;
+	cuerpos[1].vy = 0.0001;
+	cuerpos[1].vz = 0.0;
 }
 
 void finalizar(void){
@@ -290,6 +289,10 @@ int main(int argc, char * argv[]) {
 	tTotal = tFin - tIni;
 	
 	printf("Tiempo en segundos: %f\n",tTotal);
+	printf("Posiciones finales de los cuerpos:\n");
+	for (int i = 0; i < N; i++) {
+		printf("Cuerpo %d: (%.6f, %.6f, %.6f)\n", i, cuerpos[i].px, cuerpos[i].py, cuerpos[i].pz);
+	}
 
 	finalizar();
     return(0);

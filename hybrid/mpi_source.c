@@ -16,7 +16,13 @@ static void mpi_main(int rank, int N, int P, int delta_tiempo, int pasos, cuerpo
     pthread_function(rank, N, cuerpos, P, delta_tiempo, pasos);
     tFin = dwalltime();
 
-    if (rank == 1) printf("Tiempo total de ejecucion: %.10f segundos\n", tFin - tIni);
+    if (rank == 0) {
+        printf("Tiempo en segundos: %.10f\n", tFin - tIni);
+        printf("Posiciones finales de los cuerpos:\n");
+        for (int i = 0; i < N; i++) {
+            printf("Cuerpo %d: px=%.6f, py=%.6f, pz=%.6f\n", i, cuerpos[i].px, cuerpos[i].py, cuerpos[i].pz);
+        }
+    }
 }
 
 
@@ -45,8 +51,8 @@ int main(int argc, char *argv[]) {
     // printf("From main size = %d and rank = %d\n", size, rank); 
     mpi_main(rank, N, P, delta_tiempo, pasos, cuerpos);
 
-    // printf("Checkpoint rank = %d\n", rank); 
     MPI_Barrier(MPI_COMM_WORLD); 
+    // printf("Checkpoint rank = %d\n", rank); 
     MPI_Finalize();
 
     return 0;

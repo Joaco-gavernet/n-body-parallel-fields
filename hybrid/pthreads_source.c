@@ -16,7 +16,7 @@ int delta_tiempo;
 pthread_barrier_t barrier;
 
 void moveBodies(cuerpo_t *cuerpos, int N, int dt, int idT) {
-  int hasta_cuerpo = (rank == 0) ? (block_size) : N;
+  int hasta_cuerpo = N;  // Changed to always process all bodies
   for (int i = rank * (N - block_size) + idT; i < hasta_cuerpo; i += T) {
     // Se reutiliza fuerza como aceleracion
     fuerzaX_total[i] *= 1 / cuerpos[i].masa;
@@ -39,17 +39,22 @@ void calculateForces(cuerpo_t *cuerpos, int N, int dt, int idT) {
   float dif_X, dif_Y, dif_Z;
   float distancia;
   double F;
-  int hasta_cuerpo = (rank == 0 ? block_size : N - 1);
+  int start_idx = rank * (N - block_size) + idT;
+  int end_idx = (rank == 0) ? block_size : N;
 
-  // Se aplica stripes a nivel cuerpo
-  // Se aplica proporcional a nivel bloque
-  for (int i = rank * (N - block_size) + idT; i < hasta_cuerpo; i += T) {
-    int id_c1 = idT * N + i;
-    for (int j = i + 1; j < N; j++) {
+  // Reset local forces for this thread
+  for (int i = 0; i < N; i++) {
+    matriz_fuerzaX_local[idT * N + i] = 0.0;
+    matriz_fuerzaY_local[idT * N + i] = 0.0;
+    matriz_fuerzaZ_local[idT * N + i] = 0.0;
+  }
+
+  // Calculate forces for assigned bodies
+  for (int i = start_idx; i < end_idx; i += T) {
+    for (int j = 0; j < N; j++) {
+      if (i == j) continue;
       if ((cuerpos[i].px == cuerpos[j].px) && (cuerpos[i].py == cuerpos[j].py) && (cuerpos[i].pz == cuerpos[j].pz))
         continue;
-
-      int id_c2 = idT * N + j;
 
       dif_X = cuerpos[j].px - cuerpos[i].px;
       dif_Y = cuerpos[j].py - cuerpos[i].py;
@@ -63,31 +68,27 @@ void calculateForces(cuerpo_t *cuerpos, int N, int dt, int idT) {
       dif_Y *= F;
       dif_Z *= F;
 
-      matriz_fuerzaX_local[id_c1] += dif_X;
-      matriz_fuerzaY_local[id_c1] += dif_Y;
-      matriz_fuerzaZ_local[id_c1] += dif_Z;
-
-      matriz_fuerzaX_local[id_c2] -= dif_X;
-      matriz_fuerzaY_local[id_c2] -= dif_Y;
-      matriz_fuerzaZ_local[id_c2] -= dif_Z;
+      matriz_fuerzaX_local[idT * N + i] += dif_X;
+      matriz_fuerzaY_local[idT * N + i] += dif_Y;
+      matriz_fuerzaZ_local[idT * N + i] += dif_Z;
     }
   }
 }
 
 void totalForces(int idT) {
-  for (int i = rank * (N - block_size) + idT; i < N; i += T) {
+  int start_idx = rank * (N - block_size) + idT;
+  int end_idx = (rank == 0) ? block_size : N;
+
+  for (int i = start_idx; i < end_idx; i += T) {
     fuerzaX_total[i] = 0.0;
     fuerzaY_total[i] = 0.0;
     fuerzaZ_total[i] = 0.0;
 
+    // Accumulate forces from all threads for this body
     for (int j = 0; j < T; j++) {
-      int inner_idx = i + j * N;
-      fuerzaX_total[i] += matriz_fuerzaX_local[inner_idx];
-      fuerzaY_total[i] += matriz_fuerzaY_local[inner_idx];
-      fuerzaZ_total[i] += matriz_fuerzaZ_local[inner_idx];
-      matriz_fuerzaX_local[inner_idx] = 0;
-      matriz_fuerzaY_local[inner_idx] = 0;
-      matriz_fuerzaZ_local[inner_idx] = 0;
+      fuerzaX_total[i] += matriz_fuerzaX_local[j * N + i];
+      fuerzaY_total[i] += matriz_fuerzaY_local[j * N + i];
+      fuerzaZ_total[i] += matriz_fuerzaZ_local[j * N + i];
     }
   }
 }
@@ -151,8 +152,6 @@ void *funcion(void *args) {
     // Etapa 2: 
     pthread_barrier_wait(&barrier);
     calculateForces(cuerpos, N, delta_tiempo, idT);
-    
-    // Etapa 2: 
     pthread_barrier_wait(&barrier);
     totalForces(idT);
 
