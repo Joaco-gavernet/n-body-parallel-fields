@@ -26,7 +26,6 @@ double toroide_alfa, toroide_theta, toroide_incremento, toroide_lado, toroide_r,
 
 
 void calculateForces(int idW) {
-    int cuerpo1, cuerpo2;
 	float dif_X, dif_Y, dif_Z;
 	double distancia, F;
 

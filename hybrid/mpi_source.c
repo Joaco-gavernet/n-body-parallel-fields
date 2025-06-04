@@ -1,9 +1,7 @@
 // Compilar: make
-// Ejecutar: mpirun --bind-to none -np 2 nbody <nro_de_cuerpos> <DT> <pasos> <P>
+// Ejecutar: mpirun --bind-to none -np 2 hybrid <nro_de_cuerpos> <DT> <pasos> <P>
 
-#include <pthread.h>
 #include <mpi.h>
-#include "../utils/utils.h"
 #include "pthreads_source.h"
 
 
@@ -15,7 +13,7 @@ static void mpi_main(int rank, int N, int P, int delta_tiempo, int pasos, cuerpo
 
     tIni = dwalltime();
     MPI_Bcast(cuerpos, N * sizeof(cuerpo_t), MPI_BYTE, 0, MPI_COMM_WORLD);
-    pthread_worker(rank, N, cuerpos, P, delta_tiempo, pasos);
+    pthread_function(rank, N, cuerpos, P, delta_tiempo, pasos);
     tFin = dwalltime();
 
     if (rank == 1) printf("Tiempo total de ejecucion: %.10f segundos\n", tFin - tIni);

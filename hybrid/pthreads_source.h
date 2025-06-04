@@ -1,19 +1,13 @@
 #ifndef __PTHREADS_FUNCTIONS__
 #define __PTHREADS_FUNCTIONS__
 #include "../utils/utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#include <sys/time.h>
+#include <pthread.h>
 
-// TODO: check if this variables should be extern or not
-// External declarations for shared variables
-// extern cuerpo_t *cuerpos;
-// extern int N;
-// extern int rank;
-// extern int block_size;
-// extern int P;
-// extern int pasos;
-// extern float delta_tiempo;
-// extern pthread_barrier_t barrier;
-// extern float **fuerzasX, **fuerzasY, **fuerzasZ;
-
-void pthread_worker(int rank_value, int n_value, cuerpo_t *cuerpos_values, int num_threads, int delta_t, int pasos_value);
+void pthread_function(int _rank, int _N, cuerpo_t *_cuerpos, int _T, int _delta_tiempo, int _pasos); 
 
 #endif
